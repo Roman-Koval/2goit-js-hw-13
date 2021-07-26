@@ -3,7 +3,7 @@ import resultCard from './templates/resultCard.hbs';
 
 import axios from 'axios';
 import Notiflix from 'notiflix';
-// Notiflix.Notify.failure('Failure message text');
+
 
 const refs = {
   inputForm: document.querySelector('.search-form'),
@@ -15,7 +15,6 @@ const refs = {
 
 const key = '22658019-02cb55ad5d7bd8ac51d545955';
 const defaultURL = 'https://pixabay.com/api/';
-// const happyMessage = `"Hooray! We found ${this.totalHits} images."`;
 const oopsMessage = 'Sorry, there are no images matching your search query. Please try again.';
 
 refs.inputForm.addEventListener('submit', onSearch);
