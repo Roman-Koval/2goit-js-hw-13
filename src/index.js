@@ -1,60 +1,73 @@
 import './sass/main.scss';
 import resultCard from './templates/resultCard.hbs';
 
-import axios from 'axios';
+import NewsApiService from './apifetch';
 import Notiflix from 'notiflix';
 
 
 const refs = {
-  inputForm: document.querySelector('.search-form'),
-  input: document.querySelector('.searchQuery'),
-  gallery: document.querySelector('.gallery'),
-  searchBtn: document.querySelector('.searchBtn'),
-  moreBtn: document.querySelector('.load-more'),
-};
-
-const key = '22658019-02cb55ad5d7bd8ac51d545955';
-const defaultURL = 'https://pixabay.com/api/';
-const oopsMessage = 'Sorry, there are no images matching your search query. Please try again.';
-
-refs.inputForm.addEventListener('submit', onSearch);
-
-async function onSearch(event) {
-  event.preventDefault();
-  refs.gallery.innerHTML = '';
-
-  const inp = event.currentTarget.elements.searchQuery.value;
-
-  if (inp.trim() === '') {
-    addMessage('failure', oopsMessage);
-    if (!refs.moreBtn.hasAttribute('is-hidden')) {
-      refs.moreBtn.classList.add('is-hidden');
+    inputForm: document.querySelector('.search-form'),
+    gallery: document.querySelector('.gallery'),
+    searchBtn: document.querySelector('.searchBtn'),
+    moreBtn: document.querySelector('.load-more'),
+  };
+  
+  const newsApiService = new NewsApiService();
+  
+  refs.inputForm.addEventListener('submit', onSearchBtnClick);
+  refs.moreBtn.addEventListener('click', onLoadMoreBtnClick);
+  
+  let numberImages = 0;
+  
+  async function onSearchBtnClick(e) {
+    e.preventDefault();
+    newsApiService.resetPage();
+    newsApiService.query = e.currentTarget.elements.searchQuery.value;
+  
+    try {
+      const apiAnswer = await newsApiService.fetchArticles();
+      numberImages = apiAnswer.hits.length;
+  
+      if (newsApiService.query.trim() === '') {
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.',
+        );
+        cleanCardContainer();
+  
+        if (!refs.moreBtn.hasAttribute('is-hidden')) {
+          refs.moreBtn.classList.add('is-hidden');
+        }
+      } else {
+        cleanCardContainer();
+        Notiflix.Notify.info(`"Sorry, there are no images matching your search query. Please try again."`);
+        appendCardMarkup(apiAnswer.hits);
+        refs.moreBtn.classList.remove('is-hidden');
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } else {
-    await axios
-      .get(
-        `${defaultURL}?key=${key}&q=${inp}&image_type=photo&orientation=horizontal&safesearch=true&page=1&per_page=40`,
-      )
-      .then(photos => createGallery(photos));
   }
-}
-
-function createGallery({ data }) {
-  const markup = resultCard(data.hits);
-  refs.gallery.insertAdjacentHTML('beforeend', markup);
-
-  if (data.totalHits === 0) {
-    addMessage('info', `"Hooray! We found ${data.totalHits} images."`);
-    console.log(0);
-    if (!refs.moreBtn.hasAttribute('is-hidden')) {
-      refs.moreBtn.classList.add('is-hidden');
+  
+  async function onLoadMoreBtnClick() {
+    const apiAnswer = await newsApiService.fetchArticles();
+    try {
+      numberImages += apiAnswer.hits.length;
+  
+      if (numberImages >= apiAnswer.totalHits) {
+        Notiflix.Notify.failure('We are sorry, but you have reached the end of search results.');
+        refs.moreBtn.classList.add('is-hidden');
+      } else {
+        appendCardMarkup(apiAnswer.hits);
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } else {
-    addMessage('info', `"Hooray! We found ${data.totalHits} images."`);
-    refs.moreBtn.classList.remove('is-hidden');
   }
-}
-
-function addMessage(typeMessage, message) {
-  Notiflix.Notify[typeMessage](message);
-}
+  
+  function appendCardMarkup(ev) {
+    refs.gallery.insertAdjacentHTML('beforeend', resultCard(ev));
+  }
+  
+  function cleanCardContainer() {
+    refs.gallery.innerHTML = '';
+  }
