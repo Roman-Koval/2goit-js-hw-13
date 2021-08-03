@@ -8,7 +8,7 @@ export default class NewsApiService {
     this.perPage = 40;
   }
 
-  async fetchArticles() {
+  async fetchArticles() {                                    
     const url = `https://pixabay.com/api/?key=22642975-54ab0d01d9c1b1285598c5aff&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=${this.perPage}`;
     const response = await axios.get(url);
     this.page += 1;

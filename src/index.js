@@ -16,7 +16,7 @@ const newsApiService = new NewsApiService();
 
 refs.inputForm.addEventListener('submit', onSearchBtnClick);
 refs.moreBtn.addEventListener('click', onLoadMoreBtnClick);
-
+refs.moreBtn.classList.add('is-hidden');
 let numberImages = 0;
 let lightbox = new SimpleLightbox('.gallery a');
 
@@ -24,7 +24,7 @@ async function onSearchBtnClick(e) {
   e.preventDefault();
   newsApiService.resetPage();
   newsApiService.query = e.currentTarget.elements.searchQuery.value;
-
+  
   try {
     const apiAnswer = await newsApiService.fetchArticles();
     numberImages = apiAnswer.hits.length;
@@ -35,9 +35,9 @@ async function onSearchBtnClick(e) {
       );
       cleanCardContainer();
 
-      if (!refs.moreBtn.hasAttribute('is-hidden')) {
-        refs.moreBtn.classList.add('is-hidden');
-      }
+      // if (!refs.moreBtn.hasAttribute('is-hidden')) {
+      //   refs.moreBtn.classList.remove('is-hidden');
+      // }
       // if (Notiflix.Notify.info() === 0) {
       //   refs.moreBtn.classList.remove('is-hidden');
       // }  
